@@ -1,0 +1,5 @@
+telegram:
+  token: "YOUR_TELEGRAM_BOT_TOKEN"
+xboard:
+  address: "https://your-xboard-api.com"
+  token: "YOUR_XBOARD_API_TOKEN"
