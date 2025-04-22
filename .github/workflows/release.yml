@@ -6,7 +6,7 @@ on:
       tag:
         description: '输入发布的 tag 名称'
         required: true
-        default: 'v1.0.0'
+        default: 'v1.1.0'
   push:
     tags:
       - 'v*'
@@ -55,7 +55,7 @@ jobs:
         elif [ "${{ github.event_name }}" = "push" ] && [[ "${GITHUB_REF}" == refs/tags/* ]]; then
           echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
         else
-          echo "tag=v1.0.0" >> $GITHUB_OUTPUT
+          echo "tag=v1.1.0" >> $GITHUB_OUTPUT
         fi
 
     - name: Validate inputs
