@@ -1,0 +1,5 @@
+# 忽略IDE配置
+.idea/
+.vscode/
+# 忽略配置文件
+config.yaml
