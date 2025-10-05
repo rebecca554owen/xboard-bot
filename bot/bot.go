@@ -51,6 +51,9 @@ func NewBot(cfg *config.Config) (*Bot, error) {
 	handler := handler.NewHandler(teleBot, dbRepo)
 	handler.RegisterAll()
 
+	// 注册按钮处理器
+	handler.RegisterButton()
+
 	return b, nil
 }
 

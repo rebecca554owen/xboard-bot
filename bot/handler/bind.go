@@ -6,6 +6,7 @@ import (
 	"xboard-bot/utils/types"
 
 	tele "gopkg.in/telebot.v4"
+	"gorm.io/gorm/clause"
 )
 
 // handleBind 处理 /bind 命令
@@ -48,39 +49,40 @@ func (h *Handler) handleBind(c tele.Context) error {
 
 	// 查询token对应的用户是否存在
 	db := h.userRepo.GetDb()
-	var user types.User
-	err = db.Table("v2_user").Where("token = ?", token).First(&user).Error
-	if err != nil || user.ID == 0 {
-		return c.Send("token不存在,请检查订阅地址")
-	}
-
-	// 检查用户是否已绑定
-	if user.TelegramID != 0 {
-		if user.TelegramID == c.Sender().ID {
-			return c.Reply("您已经绑定过了")
-		}
-		return c.Send("该账号已经绑定了其他Telegram账号")
-	}
-
-	// 执行绑定操作
 	tx := db.Begin()
+	if tx.Error != nil {
+		return c.Send("绑定失败")
+	}
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
 		}
 	}()
 
-	user.TelegramID = c.Sender().ID
-	if err := tx.Table("v2_user").Where("token = ?", user.Token).Update("telegram_id", c.Sender().ID).Error; err != nil {
+	var user types.User
+	if err := tx.Table("v2_user").Clauses(clause.Locking{Strength: "UPDATE"}).Where("token = ?", token).First(&user).Error; err != nil || user.ID == 0 {
+		tx.Rollback()
+		return c.Send("token不存在,请检查订阅地址")
+	}
+
+	// 检查用户是否已绑定
+	if user.TelegramID != 0 {
+		if user.TelegramID == c.Sender().ID {
+			tx.Rollback()
+			return c.Reply("您已经绑定过了")
+		}
+		tx.Rollback()
+		return c.Send("该账号已经绑定了其他Telegram账号")
+	}
+
+	result := tx.Table("v2_user").Where("id = ? AND telegram_id = 0", user.ID).Update("telegram_id", c.Sender().ID)
+	if result.Error != nil {
 		tx.Rollback()
 		return c.Send("绑定失败")
 	}
-
-	// 验证更新是否成功
-	var updatedUser types.User
-	if err := tx.Table("v2_user").Where("token = ?", user.Token).First(&updatedUser).Error; err != nil || updatedUser.TelegramID != c.Sender().ID {
+	if result.RowsAffected == 0 {
 		tx.Rollback()
-		return c.Send("绑定失败")
+		return c.Send("该账号已经绑定了其他Telegram账号")
 	}
 
 	if err := tx.Commit().Error; err != nil {

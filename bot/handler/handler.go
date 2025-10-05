@@ -23,3 +23,11 @@ func (h *Handler) RegisterAll() {
 	h.bot.Handle("/subinfo", h.handleSubInfo)
 	// 可以在这里添加更多命令注册
 }
+
+// 注册所有按钮处理器
+func (h *Handler) RegisterButton() {
+	h.bot.Handle(&tele.Btn{Unique: "bind"}, h.onBindBtn)
+	h.bot.Handle(&tele.Btn{Unique: "unbind"}, h.onUnbindBtn)
+	h.bot.Handle(&tele.Btn{Unique: "subinfo"}, h.onSubinfoBtn)
+	// 可以在这里添加更多按钮注册
+}

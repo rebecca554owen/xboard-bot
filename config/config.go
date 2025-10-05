@@ -19,7 +19,7 @@ type Config struct {
 	} `mapstructure:"mysql"`
 
 	Redis struct {
-		Enabled  bool   `mapstructure:"redis_enable"`
+		Enabled  bool   `mapstructure:"enabled"`
 		Host     string `mapstructure:"redis_host"`
 		Port     int    `mapstructure:"redis_port"`
 		Password string `mapstructure:"redis_password"`
